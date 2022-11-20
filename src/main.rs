@@ -4,7 +4,7 @@ use colored::{Colorize, ColoredString};
 use rand::seq::IteratorRandom;
 
 fn main() {
-    println!("Welcome to Wordle!");
+    println!("Welcome to wordle clone by Nate Kimball!");
     println!("Enter 5 letter guesses below");
 
     let mut play_again = true;
