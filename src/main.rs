@@ -13,26 +13,28 @@ async fn main() {
     let mut play_again = true;
     let dictionary = dictionary.await;
     while play_again {
+        let answer = get_answer();
         println!("WORDLE");
-        play_again = launch_game(get_answer(), &dictionary);
+        play_again = launch_game(answer.await, &dictionary).await;
     }
 }
 
-fn launch_game(word: String, dictionary: &Dictionary) -> bool {
+async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     let mut guess_count = 0;
     let mut game_over = false;
     while guess_count<5 && !game_over {
-        let guess = get_guess();
+        let guess = get_guess().await;
         if guess.len() != 5 {
             println!("Please enter a 5 letter word");
         } else if dictionary.invalid_guess(&guess) {
             println!("Please enter a valid word");
         } else {
-            guess_count += 1;
             let results = check_guess(&guess, &word);
-            output_result(&results, &guess).iter().for_each(|x| print!("{}", x));
-            print!("\n");
+            let output = output_result(results.await, &guess);
+            guess_count += 1;
             game_over = word.to_ascii_lowercase() == guess.to_ascii_lowercase();
+            output.await.iter().for_each(|x| print!("{}", x));
+            print!("\n");
         }
     }
     if guess_count == 5 && !game_over {
@@ -46,7 +48,7 @@ fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     response.trim().chars().next().expect("Invalid response").to_ascii_lowercase() == char::from('y')
 }
 
-fn output_result(results: &[LetterResult], guess: &String) -> Vec<ColoredString> {
+async fn output_result(results: Vec<LetterResult>, guess: &String) -> Vec<ColoredString> {
     let mut output = Vec::new();
     for (i, result) in results.iter().enumerate() {
         match result {
@@ -58,7 +60,7 @@ fn output_result(results: &[LetterResult], guess: &String) -> Vec<ColoredString>
     output
 }
 
-fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
+async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
     let mut letter_counts = vec![0; 26];
     word.chars().for_each(|x| letter_counts[x.to_ascii_lowercase() as usize - 97] += 1);
 
@@ -70,9 +72,10 @@ fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
             letter_counts[x] -= 1;
         }
     }
+
     for (i, c) in guess.chars().enumerate() {
         let x = c.to_ascii_lowercase() as usize - 97;
-        if letter_counts[x] > 0 {
+        if letter_counts[x] > 0 && !matches!(results[i],LetterResult::GREEN) {
             results[i] = LetterResult::YELLOW;
             letter_counts[x] -= 1;
         }
@@ -80,7 +83,7 @@ fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
     results
 }
 
-fn get_guess() -> String {
+async fn get_guess() -> String {
     let mut guess = String::new();
     io::stdin().read_line(&mut guess)
         .expect("Failed to read line");
@@ -89,7 +92,7 @@ fn get_guess() -> String {
     guess
 }
 
-fn get_answer() -> String {
+async fn get_answer() -> String {
     let fstring = fs::read_to_string("src/resources/wordle_answers.txt").unwrap();
     let lines = fstring.lines();
     let mut rng = rand::thread_rng();
