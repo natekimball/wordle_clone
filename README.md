@@ -1,2 +1,2 @@
 # wordle_clone
-Asynchronous command line Wordle clone written in rust. Enter "cargo run" to begin.
+Command line Wordle clone built with async rust and tokio. Enter "cargo run" to begin.
