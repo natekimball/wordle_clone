@@ -1,27 +1,31 @@
 use std::{io, fs};
-
 use colored::{Colorize, ColoredString};
+use dictionary::Dictionary;
 use rand::seq::IteratorRandom;
+mod dictionary;
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    let dictionary = dictionary::Dictionary::new();
     println!("Welcome to wordle clone by Nate Kimball!");
-    println!("Enter 5 letter guesses below");
+    println!("Enter 5 letter guesses below to play!");
 
     let mut play_again = true;
+    let dictionary = dictionary.await;
     while play_again {
         println!("WORDLE");
-        play_again = launch_game(get_answer());
+        play_again = launch_game(get_answer(), &dictionary);
     }
 }
 
-fn launch_game(word: String) -> bool {
+fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     let mut guess_count = 0;
     let mut game_over = false;
     while guess_count<5 && !game_over {
         let guess = get_guess();
         if guess.len() != 5 {
             println!("Please enter a 5 letter word");
-        } else if invalid_guess(&guess) {
+        } else if dictionary.invalid_guess(&guess) {
             println!("Please enter a valid word");
         } else {
             guess_count += 1;
@@ -83,10 +87,6 @@ fn get_guess() -> String {
     let guess: String = guess.trim().parse()
         .expect("Please type a word!");
     guess
-}
-
-fn invalid_guess(guess: &String) -> bool {
-    guess.chars().any(|x| !x.is_ascii_alphabetic()) || std::fs::read_to_string("src/resources/dictionary.txt").unwrap().lines().all(|line| *guess != line.to_string())
 }
 
 fn get_answer() -> String {
