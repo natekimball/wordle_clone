@@ -6,7 +6,7 @@ mod dictionary;
 
 #[tokio::main]
 async fn main() {
-    let dictionary = Dictionary::new();
+    let dictionary = Dictionary::init();
     println!("Welcome to wordle clone by Nate Kimball!");
     println!("Enter 5 letter guesses below to play!");
 

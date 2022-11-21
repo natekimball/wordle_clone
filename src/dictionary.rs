@@ -8,7 +8,7 @@ pub struct Dictionary {
     words: Box<HashSet<String>>
 }
 impl Dictionary {
-    pub async fn new() -> Dictionary {
+    pub async fn init() -> Dictionary {
         let mut words = HashSet::new();
         let file = fs::read_to_string("src/resources/dictionary.txt").expect("Unable to read dictionary.txt");
         // file.lines().par_bridge().for_each(|line| { words.clone().insert(line.to_string()); });
