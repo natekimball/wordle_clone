@@ -6,7 +6,7 @@ mod dictionary;
 
 #[tokio::main]
 async fn main() {
-    let dictionary = dictionary::Dictionary::new();
+    let dictionary = Dictionary::new();
     println!("Welcome to wordle clone by Nate Kimball!");
     println!("Enter 5 letter guesses below to play!");
 
@@ -32,7 +32,7 @@ async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
             let results = check_guess(&guess, &word);
             let output = output_result(results.await, &guess);
             guess_count += 1;
-            game_over = word.to_ascii_lowercase() == guess.to_ascii_lowercase();
+            game_over = word == guess;
             output.await.iter().for_each(|x| print!("{}", x));
             print!("\n");
         }
@@ -62,11 +62,11 @@ async fn output_result(results: Vec<LetterResult>, guess: &String) -> Vec<Colore
 
 async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
     let mut letter_counts = vec![0; 26];
-    word.chars().for_each(|x| letter_counts[x.to_ascii_lowercase() as usize - 97] += 1);
+    word.chars().for_each(|x| letter_counts[x as usize - 97] += 1);
 
     let mut results = vec![LetterResult::GREY; 5];
     for (i, c) in guess.chars().enumerate() {
-        let x = c.to_ascii_lowercase() as usize - 97;
+        let x = c as usize - 97;
         if c == word.chars().nth(i).unwrap() {
             results[i] = LetterResult::GREEN;
             letter_counts[x] -= 1;
@@ -74,7 +74,7 @@ async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
     }
 
     for (i, c) in guess.chars().enumerate() {
-        let x = c.to_ascii_lowercase() as usize - 97;
+        let x = c as usize - 97;
         if letter_counts[x] > 0 && !matches!(results[i],LetterResult::GREEN) {
             results[i] = LetterResult::YELLOW;
             letter_counts[x] -= 1;
@@ -89,7 +89,7 @@ async fn get_guess() -> String {
         .expect("Failed to read line");
     let guess: String = guess.trim().parse()
         .expect("Please type a word!");
-    guess
+    guess.to_ascii_lowercase()
 }
 
 async fn get_answer() -> String {
@@ -97,7 +97,7 @@ async fn get_answer() -> String {
     let lines = fstring.lines();
     let mut rng = rand::thread_rng();
     let random_line = lines.choose(&mut rng).unwrap();
-    random_line.trim().to_string()
+    random_line.trim().to_ascii_lowercase()
 }
 
 #[derive(Debug, Clone)]
