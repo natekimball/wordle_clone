@@ -48,7 +48,7 @@ async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     response.trim().chars().next().expect("Invalid response").to_ascii_lowercase() == char::from('y')
 }
 
-async fn output_result(results: Vec<LetterResult>, guess: &String) -> Vec<ColoredString> {
+async fn output_result(results: [LetterResult;5], guess: &String) -> Vec<ColoredString> {
     let mut output = Vec::new();
     for (i, result) in results.iter().enumerate() {
         match result {
@@ -60,9 +60,9 @@ async fn output_result(results: Vec<LetterResult>, guess: &String) -> Vec<Colore
     output
 }
 
-async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
-    let mut letter_counts = vec![0; 26];
-    let mut results = vec![LetterResult::GREY; 5];
+async fn check_guess(guess: &String, word: &String) -> [LetterResult; 5] {
+    let mut letter_counts = [0; 26];
+    let mut results = [LetterResult::GREY; 5];
     word.chars().enumerate().for_each(|(i,c)| {
         if c != guess.chars().nth(i).unwrap() {
             letter_counts[c as usize - 97] += 1;
@@ -93,7 +93,7 @@ async fn get_answer() -> String {
     random_line.trim().to_ascii_lowercase()
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Debug, Clone)]
 enum LetterResult {
     GREEN,
     YELLOW,
