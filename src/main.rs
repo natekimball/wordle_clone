@@ -62,24 +62,21 @@ async fn output_result(results: Vec<LetterResult>, guess: &String) -> Vec<Colore
 
 async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
     let mut letter_counts = vec![0; 26];
-    word.chars().for_each(|x| letter_counts[x as usize - 97] += 1);
-
     let mut results = vec![LetterResult::GREY; 5];
-    for (i, c) in guess.chars().enumerate() {
-        let x = c as usize - 97;
-        if c == word.chars().nth(i).unwrap() {
+    word.chars().enumerate().for_each(|(i,c)| {
+        if c != guess.chars().nth(i).unwrap() {
+            letter_counts[c as usize - 97] += 1;
+        } else {
             results[i] = LetterResult::GREEN;
-            letter_counts[x] -= 1;
         }
-    }
-
-    for (i, c) in guess.chars().enumerate() {
+    });
+    guess.chars().enumerate().for_each(|(i,c)| {
         let x = c as usize - 97;
         if letter_counts[x] > 0 && !matches!(results[i],LetterResult::GREEN) {
             results[i] = LetterResult::YELLOW;
             letter_counts[x] -= 1;
         }
-    }
+    });
     results
 }
 
