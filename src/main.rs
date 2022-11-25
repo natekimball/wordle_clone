@@ -21,8 +21,8 @@ async fn main() {
 
 async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     let mut guess_count = 0;
-    let mut game_over = false;
-    while guess_count<5 && !game_over {
+    let mut won = false;
+    while guess_count<6 && !won {
         let guess = get_guess().await;
         if guess.len() != 5 {
             println!("Please enter a 5 letter word");
@@ -32,15 +32,15 @@ async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
             let results = check_guess(&guess, &word);
             let output = output_result(results.await, &guess);
             guess_count += 1;
-            game_over = word == guess;
+            won = word == guess;
             output.await.iter().for_each(|x| print!("{}", x));
             print!("\n");
         }
     }
-    if guess_count == 5 && !game_over {
-        println!("You lose! the word was {}", word.to_ascii_uppercase());
-    } else {
+    if won {
         println!("You win! You guessed the word in {} guesses", guess_count);
+    } else {
+        println!("You lose! the word was {}", word.to_ascii_uppercase());
     }
     println!("Would you like to play again? (y/n)");
     let mut response = String::new();
@@ -82,18 +82,14 @@ async fn check_guess(guess: &String, word: &String) -> Vec<LetterResult> {
 
 async fn get_guess() -> String {
     let mut guess = String::new();
-    io::stdin().read_line(&mut guess)
-        .expect("Failed to read line");
-    let guess: String = guess.trim().parse()
-        .expect("Please type a word!");
-    guess.to_ascii_lowercase()
+    io::stdin().read_line(&mut guess).expect("Failed to read line");
+    guess.trim().to_ascii_lowercase()
 }
 
 async fn get_answer() -> String {
     let fstring = fs::read_to_string("src/resources/wordle_answers.txt").unwrap();
     let lines = fstring.lines();
-    let mut rng = rand::thread_rng();
-    let random_line = lines.choose(&mut rng).unwrap();
+    let random_line = lines.choose(&mut rand::thread_rng()).unwrap();
     random_line.trim().to_ascii_lowercase()
 }
 
