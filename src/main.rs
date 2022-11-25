@@ -44,12 +44,12 @@ async fn launch_game(word: String, dictionary: &Dictionary) -> bool {
     }
     println!("Would you like to play again? (y/n)");
     let mut response = String::new();
-    io::stdin().read_line(&mut response).expect("Failed to read line");
+    io::stdin().read_line(&mut response).expect("Fa`iled to read line");
     response.trim().chars().next().expect("Invalid response").to_ascii_lowercase() == char::from('y')
 }
 
 async fn output_result(results: [LetterResult;5], guess: &String) -> Vec<ColoredString> {
-    let mut output = Vec::new();
+    let mut output = Vec::with_capacity(5);
     for (i, result) in results.iter().enumerate() {
         match result {
             LetterResult::GREEN => output.push(format!("{}", guess.chars().nth(i).unwrap().to_uppercase()).on_green()),
